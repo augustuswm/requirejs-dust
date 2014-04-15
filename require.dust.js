@@ -10,7 +10,7 @@
 define(['dust'], function (dust) {
 
   var buildMap = {},
-      buildString = "define([{deps}], function() { return {template} });",
+      buildString = "define([{deps}], function(dust) { return {template} });",
       partialRegex = /\{>(.+?)\/\}/g,
       fs, getXhr,
       progIds = ['Msxml2.XMLHTTP', 'Microsoft.XMLHTTP', 'Msxml2.XMLHTTP.4.0'],
