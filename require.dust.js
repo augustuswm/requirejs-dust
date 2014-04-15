@@ -143,6 +143,7 @@ define(['dust'], function (dust) {
 
           text = dust.compile(text, parsed.name);
           text = buildString.replace("{deps}", partials.join(",")).replace("{template}",text);
+          buildMap[name] = text;
         }
 
         onLoad.fromText(text);
