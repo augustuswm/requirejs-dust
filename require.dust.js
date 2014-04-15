@@ -7,16 +7,36 @@
  * example: dst!templatename
  * Todo: remove require that plugin be named dst ( allows for partials as deps )
  */
-define(['dust'], function (dust) {
+define(['module', 'dust'], function (module, dust) {
 
   var buildMap = {},
       buildString = "define([{deps}], function(dust) { return {template} });",
       partialRegex = /\{>(.+?)\/\}/g,
+      configPluginName = module.config().name || "dst",
       fs, getXhr,
       progIds = ['Msxml2.XMLHTTP', 'Microsoft.XMLHTTP', 'Msxml2.XMLHTTP.4.0'],
       fetchText = function () {
         throw new Error('Environment unsupported.');
       };
+
+  var findPartialsRegex = function( template ) {
+    var partials = [], match;
+          
+    while ( match = partialRegex.exec(text) )
+      partials.push( "'" + configPluginName + "!" + parsed.dir + match[1] + "'" );
+
+    return partials;
+  };
+
+  var findPartialsDust = function( template ) {
+    var components = dust.parse( template ), partials = [], match;
+
+    for ( var i = components.length - 1; i >= 0; i-- )
+      if ( components[i][0] == "partial" )
+        partials.push( "'" + configPluginName + "!" + parsed.dir + match[1] + "'" );
+
+    return partials;
+  };
 
   var parseTemplateName = function( name ) {
     var parsed = { dir: "", name: "", ext: "" };
@@ -132,12 +152,9 @@ define(['dust'], function (dust) {
 
       fetchText(path, function (text) {
 
-        //Hold on to the transformed text if a build.
+        //Hold on to the compiled template as text if a build.
         if (config.isBuild) {
-          var partials = [], match;
-          
-          while ( match = partialRegex.exec(text) )
-            partials.push( "'dst!" + parsed.dir + match[1] + "'" );
+          var partials = findPartials( text );
           
           partials.unshift("'dust'");
 

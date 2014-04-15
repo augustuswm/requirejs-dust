@@ -53,5 +53,5 @@ Compiles to:
 ## TODO <a name="todo".</a>
 
 * Test versus dust lib for finding partials
-* Can module name be abstracted out?
+* Can plugin name be abstracted out?
 * Test and implement behavior for relative paths.
