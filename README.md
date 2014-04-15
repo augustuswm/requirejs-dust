@@ -49,3 +49,9 @@ Compiles to:
 			return body_0;
 		})();
 	});
+
+## TODO <a name="todo".</a>
+
+* Test versus dust lib for finding partials
+* Can module name be abstracted out?
+* Test and implement behavior for relative paths.
