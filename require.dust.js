@@ -1,7 +1,7 @@
 /** @license
  * RequireJS plugin for loading dust templates based on require-cs
  * Author: Augustus Mayo
- * Version: 0.0.1 (2014/04/13)
+ * Version: 0.0.1
  * Released under the MIT license
  * 
  * example: dst!templatename

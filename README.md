@@ -50,6 +50,21 @@ Compiles to:
 		})();
 	});
 
+## Tips <a name="tips".<.a>
+
+The idea behind the plugin is to build with node and then ship the compiled templates with dust core rather than full
+
+The following can be added to your require config ( I didn't write this, but I can't find my source to give them credit )
+
+	onBuildWrite : function(moduleName, path, content){
+		if (moduleName === 'dust') {
+		    path = path.replace('dust.full.js','dust.js');
+		    content = fs.readFileSync(path).toString();
+		    content = content.replace(/(define\()(function)/, '$1"dust", $2');
+		}
+	    return content;
+  	}
+
 ## TODO <a name="todo".</a>
 
 * Can plugin name be abstracted out?
