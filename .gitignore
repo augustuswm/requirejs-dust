@@ -218,3 +218,9 @@ pip-log.txt
 ## Node
 #############
 node_modules
+
+#############
+## Sublime
+#############
+*.sublime-project
+*.sublime-workspace
