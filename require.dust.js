@@ -22,8 +22,8 @@ define(['module', 'dust'], function (module, dust) {
   var findPartialsRegex = function( template ) {
     var partials = [], match;
           
-    while ( match = partialRegex.exec(text) )
-      partials.push( "'" + configPluginName + "!" + parsed.dir + match[1] + "'" );
+    while ( match = partialRegex.exec(template) )
+      partials.push( "'" + configPluginName + "!" + match[1] + "'" );
 
     return partials;
   };
@@ -33,7 +33,7 @@ define(['module', 'dust'], function (module, dust) {
 
     for ( var i = components.length - 1; i >= 0; i-- )
       if ( components[i][0] == "partial" )
-        partials.push( "'" + configPluginName + "!" + parsed.dir + match[1] + "'" );
+        partials.push( "'" + configPluginName + "!" + components[i][1][1] + "'" );
 
     return partials;
   };
@@ -180,7 +180,11 @@ define(['module', 'dust'], function (module, dust) {
         var text = buildMap[name];
         write.asModule(pluginName + "!" + name, text);
       }
-    }
+    },
+
+    findPartialsRegex: findPartialsRegex,
+
+    findPartialsDust: findPartialsDust
 
   };
 
