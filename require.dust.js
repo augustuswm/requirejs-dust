@@ -19,24 +19,26 @@ define(['module', 'dust'], function (module, dust) {
         throw new Error('Environment unsupported.');
       };
 
-  var findPartialsRegex = function( template ) {
-    var partials = [], match;
+  var findPartialsRegex = function( templateName, template ) {
+    var partials = [], match, parsedName = parseTemplateName( templateName );
           
     while ( match = partialRegex.exec(template) )
-      partials.push( "'" + configPluginName + "!" + match[1] + "'" );
+      partials.push( "'" + configPluginName + "!" + parsedName.dir + match[1] + "'" );
 
     return partials;
   };
 
-  var findPartialsDust = function( template ) {
-    var components = dust.parse( template ), partials = [], match;
+  var findPartialsDust = function( templateName, template ) {
+    var components = dust.parse( template ), partials = [], match, parsedName = parseTemplateName( templateName );
 
     for ( var i = components.length - 1; i >= 0; i-- )
       if ( components[i][0] == "partial" )
-        partials.push( "'" + configPluginName + "!" + components[i][1][1] + "'" );
+        partials.push( "'" + configPluginName + "!" + parsedName.dir + components[i][1][1] + "'" );
 
     return partials;
   };
+
+  var findPartials = findPartialsRegex;
 
   var parseTemplateName = function( name ) {
     var parsed = { dir: "", name: "", ext: "" };
