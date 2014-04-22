@@ -25,12 +25,12 @@ describe("Template Compilation", function() {
     });
   });
 
-  it("both parsers should have same length", function() {
+  it("both parsers should have same length for simple partials", function() {
     var test_template = '<!DOCTYPE html><html><head><title>{title}</title><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=0" /><link rel="stylesheet" href="/stylesheets/base.css">{+head/}</head><body class="jp-page">{>navbar/}<div class="jp-page-content">{+content/}</div><script src="/js/base.min.js"></script><script>requirejs.config({baseUrl: "/js"});</script>{+script/}</body></html>';
     dst_lib.findPartialsRegex(test_template).length.should.equal(dst_lib.findPartialsDust(test_template).length);
   });
 
-  it("both parsers should have same elements", function() {
+  it("both parsers should have same elements for simple partials", function() {
     var test_template = '<!DOCTYPE html><html><head><title>{title}</title><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=0" /><link rel="stylesheet" href="/stylesheets/base.css">{+head/}</head><body class="jp-page">{>navbar/}<div class="jp-page-content">{+content/}</div><script src="/js/base.min.js"></script><script>requirejs.config({baseUrl: "/js"});</script>{+script/}</body></html>',
         regexParse = dst_lib.findPartialsRegex(test_template),
         dustParse = dst_lib.findPartialsDust(test_template);
@@ -79,5 +79,46 @@ describe("Template Compilation", function() {
       var dustParse = dst_lib.findPartialsDust(test_template);
   });
 
+  it("both parsers should have same length for partials with paths", function() {
+    var test_template = '{>"path/to/partial"/}';
+    dst_lib.findPartialsRegex(test_template).length.should.equal(dst_lib.findPartialsDust(test_template).length);
+  });
+
+  it("both parsers should have same elements for partials with paths", function() {
+    var test_template = '{>"path/to/partial"/}',
+        regexParse = dst_lib.findPartialsRegex(test_template),
+        dustParse = dst_lib.findPartialsDust(test_template);
+
+    regexParse.should.matchEach(function(it) { return dustParse.indexOf(it) != -1 });
+    dustParse.should.matchEach(function(it) { return regexParse.indexOf(it) != -1 });
+  });
+
+  it("both parsers should have same length for dynamic partials", function() {
+    var test_template = '{>"dynaviews/dyna{viewname}"/}';
+    dst_lib.findPartialsRegex(test_template).length.should.equal(dst_lib.findPartialsDust(test_template).length);
+  });
+
+  it("both parsers should have same elements for dynamic partials", function() {
+    var test_template = '{>"dynaviews/dyna{viewname}"/}',
+        regexParse = dst_lib.findPartialsRegex(test_template),
+        dustParse = dst_lib.findPartialsDust(test_template);
+
+    regexParse.should.matchEach(function(it) { return dustParse.indexOf(it) != -1 });
+    dustParse.should.matchEach(function(it) { return regexParse.indexOf(it) != -1 });
+  });
+
+  it("both parsers should have same length for partials with parameters", function() {
+    var test_template = '{>partial parameter=thingy/}';
+    dst_lib.findPartialsRegex(test_template).length.should.equal(dst_lib.findPartialsDust(test_template).length);
+  });
+
+  it("both parsers should have same elements for partials with parameters", function() {
+    var test_template = '{>partial parameter=thingy/}',
+        regexParse = dst_lib.findPartialsRegex(test_template),
+        dustParse = dst_lib.findPartialsDust(test_template);
+
+    regexParse.should.matchEach(function(it) { return dustParse.indexOf(it) != -1 });
+    dustParse.should.matchEach(function(it) { return regexParse.indexOf(it) != -1 });
+  });
 
 });

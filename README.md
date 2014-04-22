@@ -67,6 +67,6 @@ The following can be added to your require config ( I didn't write this, but I c
 
 ## TODO <a name="todo".</a>
 
-* Can plugin name be abstracted out?
-* Test and implement behavior for relative paths.
-* Set up regex for more complex partials
+* Plugin name available as config option - is this right?
+* Set up regex for more complex partials ( dynamic partials, partials with paths, partials with parameters )
+* Partials need to keep path of module they are loaded from
