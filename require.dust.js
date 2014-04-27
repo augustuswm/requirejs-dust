@@ -11,7 +11,8 @@ define(['module', 'dust'], function (module, dust) {
 
   var buildMap = {},
       buildString = "define([{deps}], function(dust) { return {template} });",
-      partialRegex = /\{>(.+?)\/\}/g,
+      // partialRegex = /\{>"?([^\s"]+)"?.*?\/\}/g,
+      partialRegex = /\{>(([^\s"}]+)|"([^\s]+)")( [^\/]+)?\/\}/g,
       configPluginName = module.config().name || "dst",
       fs, getXhr,
       progIds = ['Msxml2.XMLHTTP', 'Microsoft.XMLHTTP', 'Msxml2.XMLHTTP.4.0'],
@@ -20,10 +21,16 @@ define(['module', 'dust'], function (module, dust) {
       };
 
   var findPartialsRegex = function( templateName, template ) {
-    var partials = [], match, parsedName = parseTemplateName( templateName );
+    var partials = [], match, parsedName = parseTemplateName( templateName ), matchName;
           
-    while ( match = partialRegex.exec(template) )
-      partials.push( "'" + configPluginName + "!" + parsedName.dir + match[1] + "'" );
+    while ( match = partialRegex.exec(template) ) {
+      if ( match[2] === undefined )
+        matchName = match[3];
+      else
+        matchName = match[2];
+
+      partials.push( "'" + configPluginName + "!" + parsedName.dir + matchName + "'" );
+    }
 
     return partials;
   };
