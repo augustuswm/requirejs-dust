@@ -1,13 +1,15 @@
 requirejs-dust
 ==============
 
-## requirejs-dust <a name="requirejs-dust".</a>
+## requirejs-dust
 
 A [RequireJS](http://requirejs.org/ "RequireJS") plugin for compiling [LinkedIn Dust](https://github.com/linkedin/dustjs "LinkedIn Dust on GitHub") dependencies into modules. Partials found within a template are added as dependencies. Based upon the plugin [require-cs](https://github.com/requirejs/require-cs).
 
 This plugin requires templates to be precompiled, and will compile them using the RequireJS optimization process.
 
-## Usage <a name="usage".</a>
+## Usage
+
+### Basic
 
 Reference dust files via the dst! plugin name.
 
@@ -24,6 +26,24 @@ Example:
 	require(["dst!tpl/Page"], function() {
 		// Do things
 	});
+
+### Extra
+
+Requirejs-dust compiles your templates during the opitimization process of RequireJS and therefore your context is not necessarily defined at that time. Because of this dynamic partials are ignored by default and it is left to you to include them.
+
+If your application though does know the values to use for dynamic partials and compile time you can use the optional argument to pass in a JSON object and it will be used as a context to try and find values to use for your dynamic partials. Any found values will be used and the dynamic partials whose value can not be found are left alone.
+
+Template:
+
+	{>"dynaviews/dyna{a.viewname}"/}
+
+Logic:
+
+	require( ["dst!tpl/Page!{{a:{viewname:\"replacement\"}}}"], function() {
+		// Do things
+	});
+
+## Optimization
 
 During the optimization process the plugin will parse for partials that are required by dependent templates.
 
@@ -50,7 +70,7 @@ Compiles to:
 		})();
 	});
 
-## Tips <a name="tips".<.a>
+## Tips
 
 The idea behind the plugin is to build with node and then ship the compiled templates with dust core rather than full
 
@@ -65,8 +85,6 @@ The following can be added to your require config ( I didn't write this, but I c
 	    return content;
   	}
 
-## TODO <a name="todo".</a>
+## TODO
 
-* Plugin name available as config option - is this right?
-* Set up regex for more complex partials ( dynamic partials, partials with paths, partials with parameters )
-* Partials need to keep path of module they are loaded from
+* Build lots more tests
