@@ -24,11 +24,13 @@ define(["module", "dust"], function (module, dust) {
   var substituteDynamic = function( dynamicMatch, context ) {
     if ( dynamicMatch.lastIndexOf(".") > -1 ) {
       var pathPieces = dynamicMatch.split("."), pathPlace = context;
-      // Find the value to substitute in from arguments
+
+      // Traverse the context until value is found or a property is not defined
       for ( var i = 0; i < pathPieces.length && pathPlace.hasOwnProperty(pathPieces[i]); i++ ) {
         pathPlace = pathPlace[pathPieces[i]];
       }
 
+      // Only return our found value if it is suitable as a replacement
       if ( typeof( pathPlace ) === "string" )
         return pathPlace;
       else
@@ -39,13 +41,20 @@ define(["module", "dust"], function (module, dust) {
   var findPartialsRegex = function( templateName, template, context ) {
     var partials = [], match, parsedName = parseTemplateName( templateName ), matchName;
           
+    // Find all partial matches
     while ( ( match = partialRegex.exec(template) ) ) {
+      // Match[2] => simple partial ( no quotes, no arguments, and is not dynamic )
+      // Match[3] => complex partial ( quoted name, arguments, or is dynamic )
+      // Can this be simplified into a single match?
       if ( match[2] === undefined )
         matchName = match[3];
       else
         matchName = match[2];
 
-      if ( ( match = dynamicPartialRegex.exec(matchName) ) && context !== null ) {
+      // If we were given a context to use to replace check to see if the
+      // partial we found is a dynamic partial if so attempt replacement
+      // What if there are multiple dynamic pieces to replace?
+      if ( context !== null && ( match = dynamicPartialRegex.exec(matchName) ) ) {
         match = match[1];
 
         var matchReplacement = substituteDynamic( match, context );
@@ -54,6 +63,7 @@ define(["module", "dust"], function (module, dust) {
           matchName = matchName.replace("{" + match + "}", matchReplacement);
       
       }
+
 
       partials.push( "'" + configPluginName + "!" + parsedName.dir + matchName + "'" );
     }
@@ -196,6 +206,8 @@ define(["module", "dust"], function (module, dust) {
     load : function (name, req, onLoad, config) {
       var parsed = parseTemplateName( name );
       var path = req.toUrl( name + ( config.isBuild ? ".dust" : ".js" ) );
+
+
 
       fetchText(path, function (text) {
 

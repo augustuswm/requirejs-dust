@@ -21,7 +21,7 @@ describe("Template building", function() {
 
     requirejs(['dst'], function(plugin) {
       dst_lib = plugin;
-      ( function() { dst_lib.load("test_template", requirejs, function() {}, { isBuild: true }); }).should.throw(/dust.compile is not available to compile template/);
+      ( function() { dst_lib.load("test_templates/empty", requirejs, function() {}, { isBuild: true }); }).should.throw(/dust.compile is not available to compile template/);
       done();
     });
 

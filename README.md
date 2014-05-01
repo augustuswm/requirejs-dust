@@ -31,7 +31,7 @@ Example:
 
 Requirejs-dust compiles your templates during the opitimization process of RequireJS and therefore your context is not necessarily defined at that time. Because of this dynamic partials are ignored by default and it is left to you to include them.
 
-If your application though does know the values to use for dynamic partials and compile time you can use the optional argument to pass in a JSON object and it will be used as a context to try and find values to use for your dynamic partials. Any found values will be used and the dynamic partials whose value can not be found are left alone.
+If your application though does know the values to use for dynamic partials at compile time you can use the optional argument to pass in a JSON object and it will be used as a context to try and find values to use for your dynamic partials. Any found values will be used and the dynamic partials whose value can not be found are left alone.
 
 Template:
 
@@ -72,7 +72,7 @@ Compiles to:
 
 ## Tips
 
-The idea behind the plugin is to build with node and then ship the compiled templates with dust core rather than full
+The idea behind the plugin is to build with node and then ship the compiled templates with dust core rather than full.
 
 The following can be added to your require config ( I didn't write this, but I can't find my source to give them credit )
 
@@ -88,3 +88,4 @@ The following can be added to your require config ( I didn't write this, but I c
 ## TODO
 
 * Build lots more tests
+* Dynamic partials currently only handle a single replacement per partial
