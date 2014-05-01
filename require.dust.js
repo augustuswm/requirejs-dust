@@ -7,27 +7,53 @@
  * example: dst!templatename
  * Todo: remove require that plugin be named dst ( allows for partials as deps )
  */
-define(['module', 'dust'], function (module, dust) {
+define(["module", "dust"], function (module, dust) {
+  "use strict";
 
   var buildMap = {},
       buildString = "define([{deps}], function(dust) { return {template} });",
-      // partialRegex = /\{>"?([^\s"]+)"?.*?\/\}/g,
-      partialRegex = /\{>(([^\s"}]+)|"([^\s]+)")( [^\/]+)?\/\}/g,
+      partialRegex = /\{>(([^\s"}]+)|"([^\s}]+}?)")( [^\/]+)?\/\}/g,
+      dynamicPartialRegex = /\{([^\s}]+)\}/,
       configPluginName = module.config().name || "dst",
       fs, getXhr,
-      progIds = ['Msxml2.XMLHTTP', 'Microsoft.XMLHTTP', 'Msxml2.XMLHTTP.4.0'],
+      progIds = ["Msxml2.XMLHTTP", "Microsoft.XMLHTTP", "Msxml2.XMLHTTP.4.0"],
       fetchText = function () {
-        throw new Error('Environment unsupported.');
+        throw new Error("Environment unsupported.");
       };
 
-  var findPartialsRegex = function( templateName, template ) {
+  var substituteDynamic = function( dynamicMatch, context ) {
+    if ( dynamicMatch.lastIndexOf(".") > -1 ) {
+      var pathPieces = dynamicMatch.split("."), pathPlace = context;
+      // Find the value to substitute in from arguments
+      for ( var i = 0; i < pathPieces.length && pathPlace.hasOwnProperty(pathPieces[i]); i++ ) {
+        pathPlace = pathPlace[pathPieces[i]];
+      }
+
+      if ( typeof( pathPlace ) === "string" )
+        return pathPlace;
+      else
+        return null;
+    }
+  };
+
+  var findPartialsRegex = function( templateName, template, context ) {
     var partials = [], match, parsedName = parseTemplateName( templateName ), matchName;
           
-    while ( match = partialRegex.exec(template) ) {
+    while ( ( match = partialRegex.exec(template) ) ) {
       if ( match[2] === undefined )
         matchName = match[3];
       else
         matchName = match[2];
+
+      if ( ( match = dynamicPartialRegex.exec(matchName) ) && context !== null ) {
+        match = match[1];
+
+        var matchReplacement = substituteDynamic( match, context );
+
+        if ( matchReplacement !== null )
+          matchName = matchName.replace("{" + match + "}", matchReplacement);
+      
+      }
 
       partials.push( "'" + configPluginName + "!" + parsedName.dir + matchName + "'" );
     }
@@ -36,7 +62,7 @@ define(['module', 'dust'], function (module, dust) {
   };
 
   var findPartialsDust = function( templateName, template ) {
-    var components = dust.parse( template ), partials = [], match, parsedName = parseTemplateName( templateName );
+    var components = dust.parse( template ), partials = [], parsedName = parseTemplateName( templateName );
 
     for ( var i = components.length - 1; i >= 0; i-- )
       if ( components[i][0] == "partial" )
@@ -48,7 +74,15 @@ define(['module', 'dust'], function (module, dust) {
   var findPartials = findPartialsRegex;
 
   var parseTemplateName = function( name ) {
-    var parsed = { dir: "", name: "", ext: "" };
+    var parsed = { dir: "", name: "", ext: "", opts: null }, separationCol = name.lastIndexOf("!");
+
+    if ( separationCol > -1 ) {
+      try {
+        parsed.opts = JSON.parse(name.substr(separationCol + 1));
+      } catch ( err) {
+        throw new SyntaxError("Failed to parse context");
+      }
+    }
 
     parsed.dir = name.substr(0, name.lastIndexOf("/") + 1);
     parsed.name = name.substr(name.lastIndexOf("/") + 1);
@@ -61,9 +95,9 @@ define(['module', 'dust'], function (module, dust) {
       process.versions &&
       !!process.versions.node) {
       //Using special require.nodeRequire, something added by r.js.
-    fs = require.nodeRequire('fs');
+    fs = require.nodeRequire("fs");
     fetchText = function (path, callback) {
-      callback(fs.readFileSync(path, 'utf8'));
+      callback(fs.readFileSync(path, "utf8"));
     };
   } else if ((typeof window !== "undefined" && window.navigator && window.document) || typeof importScripts !== "undefined") {
     // Browser action
@@ -96,8 +130,8 @@ define(['module', 'dust'], function (module, dust) {
 
     fetchText = function (url, callback) {
       var xhr = getXhr();
-      xhr.open('GET', url, true);
-      xhr.onreadystatechange = function (evt) {
+      xhr.open("GET", url, true);
+      xhr.onreadystatechange = function ( /*evt*/ ) {
         //Do not explicitly handle errors, those should be
         //visible via console output in the browser.
         if (xhr.readyState === 4) {
@@ -109,7 +143,9 @@ define(['module', 'dust'], function (module, dust) {
     };
     // end browser.js adapters
   
-  } else if (typeof Packages !== 'undefined') {
+  } else if (typeof Packages !== "undefined") {
+    /* jshint ignore:start */
+
     //Why Java, why is this so awkward?
     fetchText = function (path, callback) {
       var stringBuffer, line,
@@ -117,7 +153,7 @@ define(['module', 'dust'], function (module, dust) {
           file = new java.io.File(path),
           lineSeparator = java.lang.System.getProperty("line.separator"),
           input = new java.io.BufferedReader(new java.io.InputStreamReader(new java.io.FileInputStream(file), encoding)),
-          content = '';
+          content = "";
       
       try {
         stringBuffer = new java.lang.StringBuffer();
@@ -148,12 +184,14 @@ define(['module', 'dust'], function (module, dust) {
       }
       callback(content);
     };
+
+    /* jshint ignore:end */
   }
 
   // API
   return {
 
-    version: '0.0.1',
+    version: "0.0.1",
 
     load : function (name, req, onLoad, config) {
       var parsed = parseTemplateName( name );
@@ -163,7 +201,10 @@ define(['module', 'dust'], function (module, dust) {
 
         //Hold on to the compiled template as text if a build.
         if (config.isBuild) {
-          var partials = findPartials( text );
+          if ( !(dust) || !(dust.compile) )
+            throw new ReferenceError( "dust.compile is not available to compile template" );
+
+          var partials = findPartials( text, parsed.opts );
           
           partials.unshift("'dust'");
 
@@ -190,6 +231,8 @@ define(['module', 'dust'], function (module, dust) {
         write.asModule(pluginName + "!" + name, text);
       }
     },
+
+    parseTemplateName: parseTemplateName,
 
     findPartialsRegex: findPartialsRegex,
 
